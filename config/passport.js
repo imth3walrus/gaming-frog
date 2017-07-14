@@ -58,6 +58,40 @@ passport.deserializeUser((userIdFromSession, cb) => {
     });
   }));
 
+  passport.use(new FbStrategy({
+  clientID: process.env.FB_APP_ID,
+  clientSecret: process.env.FB_APP_SECRET,
+  callbackURL: "/auth/facebook/callback"
+}, (accessToken, refreshToken, profile, done) => {
+  console.log('');
+  console.log(`FACEBOOK PROFILE ----------------`);
+  console.log(profile);
+  console.log('');
+
+  User.findOne({ facebookID: profile.id }, (err, user) => {
+    if (err) {
+      return done(err);
+    }
+    if (user) {
+      return done(null, user);
+    }
+
+    const newUser = new User({
+      facebookID: profile.id,
+      name: profile.displayName,
+      pic_path: `http://graph.facebook.com/{ profile.id }/picture?type=square`
+    });
+
+    newUser.save((err) => {
+      if (err) {
+        return done(err);
+      }
+      done(null, newUser);
+    });
+  });
+
+}));
+
 
 
 };
