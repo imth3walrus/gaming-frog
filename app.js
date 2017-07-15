@@ -42,7 +42,7 @@ app.use(session({
   secret: 'wecodetheworld',
   resave: true,
   saveUninitialized: true,
-  // cookie : { httpOnly: true, maxAge: 2419200000 }
+  cookie : { httpOnly: false, maxAge: 2419200000 }
 }));
 app.use(passport.initialize());
 app.use(passport.session());

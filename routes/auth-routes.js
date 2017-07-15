@@ -120,11 +120,13 @@ authRoutes.post('/login', ensureNotLoggedIn, (req, res, next) => {
 authRoutes.post('/logout', (req, res, next) => {
   req.logout();
   req.session.destroy();
+  console.log(req.isAuthenticated());
   res.status(200).json({ message: 'Success.' });
 });
 
 authRoutes.get('/loggedin', ensureLoggedIn, (req, res, next) => {
   console.log('-----------PASSING INFO--------');
+  console.log(req.isAuthenticated());
   console.log(req.user);
   if (req.isAuthenticated()) {
     return res.status(200).json(req.user);
