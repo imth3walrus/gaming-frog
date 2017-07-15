@@ -119,6 +119,7 @@ authRoutes.post('/login', ensureNotLoggedIn, (req, res, next) => {
 //--------------Logout Route-------------
 authRoutes.post('/logout', (req, res, next) => {
   req.logout();
+  req.session.destroy();
   res.status(200).json({ message: 'Success.' });
 });
 
@@ -127,7 +128,6 @@ authRoutes.get('/loggedin', ensureLoggedIn, (req, res, next) => {
   console.log(req.user);
   if (req.isAuthenticated()) {
     return res.status(200).json(req.user);
-
   }else{
     return res.status(401).json({ message: 'Unauthorized.' });
 
