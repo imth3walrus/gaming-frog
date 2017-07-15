@@ -1,7 +1,8 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const User          = require('../models/user-model');
 const bcrypt        = require('bcrypt');
+const LocalStrategy = require('passport-local').Strategy;
+const FbStrategy = require('passport-facebook').Strategy;
 
 module.exports = function (passport) {
 
@@ -61,12 +62,10 @@ passport.deserializeUser((userIdFromSession, cb) => {
   passport.use(new FbStrategy({
   clientID: process.env.FB_APP_ID,
   clientSecret: process.env.FB_APP_SECRET,
-  callbackURL: "/auth/facebook/callback"
+  callbackURL: "api/auth/facebook/callback"
 }, (accessToken, refreshToken, profile, done) => {
-  console.log('');
-  console.log(`FACEBOOK PROFILE ----------------`);
+  console.log(`---------------FACEBOOK PROFILE ----------------`);
   console.log(profile);
-  console.log('');
 
   User.findOne({ facebookID: profile.id }, (err, user) => {
     if (err) {
@@ -78,7 +77,7 @@ passport.deserializeUser((userIdFromSession, cb) => {
 
     const newUser = new User({
       facebookID: profile.id,
-      name: profile.displayName,
+      first_name: profile.displayName,
       pic_path: `http://graph.facebook.com/{ profile.id }/picture?type=square`
     });
 

@@ -6,7 +6,6 @@ const User     = require('../models/user-model');
 
 const authRoutes = express.Router();
 
-/*-------------Start |---------------------------*/
 //function to make sure you are not log in
 function ensureNotLoggedIn(req, res, next) {
   if (req.isAuthenticated()) {
@@ -18,10 +17,7 @@ function ensureNotLoggedIn(req, res, next) {
   next();
   return;
 }
-/*--------------End|--------------------------*/
 
-
-/*-------------Start |---------------------------*/
 //function to make sure you are logged in
 function ensureLoggedIn(req, res, next) {
 
@@ -35,11 +31,9 @@ function ensureLoggedIn(req, res, next) {
 
   return;
 }
-/*--------------End|--------------------------*/
 
 
 authRoutes.post('/signup', (req, res, next) => {
-  console.log('---------------------HI-------------');
   const username = req.body.username;
   const password = req.body.password;
 
@@ -47,8 +41,6 @@ authRoutes.post('/signup', (req, res, next) => {
     res.status(400).json({ message: 'Provide username and password.' });
     return;
   }
-
-  console.log('---------------------PASSED FIRST-------------');
 
   User.findOne({ username }, '_id', (err, foundUser) => {
     if (err) {
@@ -60,8 +52,6 @@ authRoutes.post('/signup', (req, res, next) => {
       res.status(400).json({ message: 'The username already exists.' });
       return;
     }
-
-    console.log('---------------------PASSED REQS-------------');
 
     const salt     = bcrypt.genSaltSync(10);
     const hashPass = bcrypt.hashSync(password, salt);
@@ -76,8 +66,6 @@ authRoutes.post('/signup', (req, res, next) => {
       username,
       encryptedPassword: hashPass,
     });
-    console.log('------------------------------USER-------------');
-    console.log(theUser);
 
     theUser.save((err) => {
       if (err) {
@@ -100,7 +88,7 @@ authRoutes.post('/signup', (req, res, next) => {
 
 
 
-// ------------ LOGIN OPTION A ------------
+// ------------ LOGIN ROUTE ------------
 authRoutes.post('/login', ensureNotLoggedIn, (req, res, next) => {
   const passportFunction = passport.authenticate('local',
     (err, theUser, failureDetails) => {
@@ -128,45 +116,11 @@ authRoutes.post('/login', ensureNotLoggedIn, (req, res, next) => {
   passportFunction(req, res, next);
 });
 
-// ------------ LOGIN OPTION B ------------
-// authRoutes.post('/login', (req, res, next) => {
-//   passport.authenticate('local', (err, theUser, failureDetails) => {
-//     if (err) {
-//       res.status(500).json({ message: 'Something went wrong.' });
-//       return;
-//     }
-//
-//     if (!theUser) {
-//       res.status(401).json(failureDetails);
-//       return;
-//     }
-//
-//     req.login(theUser, (err) => {
-//       if (err) {
-//         res.status(500).json({ message: 'Something went wrong.' });
-//         return;
-//       }
-//
-//       res.status(200).json(req.user);
-//     });
-//   })(req, res, next);
-// });
-
+//--------------Logout Route-------------
 authRoutes.post('/logout', (req, res, next) => {
   req.logout();
   res.status(200).json({ message: 'Success.' });
 });
-
-// authRoutes.get('/loggedin', (req, res, next) => {
-//   console.log('-----------PASSING INFO--------');
-//   console.log(req.user);
-//   if (req.isAuthenticated()) {
-//     res.status(200).json(req.user);
-//     return;
-//   }
-//
-//   res.status(401).json({ message: 'Unauthorized.' });
-// });
 
 authRoutes.get('/loggedin', ensureLoggedIn, (req, res, next) => {
   console.log('-----------PASSING INFO--------');
@@ -181,17 +135,42 @@ authRoutes.get('/loggedin', ensureLoggedIn, (req, res, next) => {
 
 });
 
-
-function notLoggedIn (req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.status(403).json({ message: 'FORBIDDEN.' });
+// ---------FACEBOOK LOGIN ROUTES-------
+authRoutes.get('/auth/facebook', passport.authenticate('facebook'));
+authRoutes.get('/auth/facebook/callback', passport.authenticate('facebook',
+  (err, theUser, failureDetails) => {
+  if (err) {
+    res.status(500).json({ message: 'Something went wrong.' });
     return;
   }
 
-  next();
-}
+  if (!theUser) {
+    res.status(401).json(failureDetails);
+    return;
+  }
 
-authRoutes.get('/private', notLoggedIn, (req, res, next) => {
+  req.login(theUser, (err) => {
+    if (err) {
+      res.status(500).json({ message: 'Something went wrong.' });
+      return;
+    }
+
+    res.status(200).json(req.user);
+  });
+  }
+));
+
+// -----NOT LOGGEDIN OPTION B---------
+// function notLoggedIn (req, res, next) {
+//   if (!req.isAuthenticated()) {
+//     res.status(403).json({ message: 'FORBIDDEN.' });
+//     return;
+//   }
+//
+//   next();
+// }
+
+authRoutes.get('/private', ensureLoggedIn, (req, res, next) => {
   res.json({ message: 'Todays lucky number is 7677' });
 });
 

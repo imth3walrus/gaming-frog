@@ -9,10 +9,10 @@ const mongoose     = require('mongoose');
 
 const session    = require('express-session');
 const passport   = require('passport');
+require("dotenv").config();
 const passportSetup = require('./config/passport');
 const cors = require('cors');
 passportSetup(passport);
-require("dotenv").config();
 mongoose.connect(process.env.MONGODB_URI);
 
 
