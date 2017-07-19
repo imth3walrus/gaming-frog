@@ -50,7 +50,8 @@ const userSchema = new Schema({
     type: Boolean,
     default: true
   },
-  payment_method: String
+  payment_method: String,
+  paypal_token: String,
 },
 
 {
