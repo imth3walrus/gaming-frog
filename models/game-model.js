@@ -21,7 +21,7 @@ const gameSchema = new Schema({
     type: String,
     enum: ['xbox one', 'ps4']
   },
-  half_lenght: {
+  half_length: {
     type: Number,
     default: 5,
     enum: [ 5, 6, 7, 8, 9, 10]

@@ -72,6 +72,8 @@ const index = require('./routes/index');
 app.use('/api', index);
 const authRoutes = require('./routes/auth-routes');
 app.use('/api', authRoutes);
+const gameRoutes = require('./routes/game-routes');
+app.use('/api', gameRoutes);
 
 // not logged in function
 // function notLoggedIn (req, res, next) {
