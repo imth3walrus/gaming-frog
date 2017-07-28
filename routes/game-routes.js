@@ -69,15 +69,32 @@ gameRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
 gameRoutes.get('/matches', ensureLoggedIn, (req, res, next) => {
   Game.
   find()
+  .sort({"createdAt": -1})
   .exec((err, theGames) => {
     if(err) {
       next(err);
       return;
     }
-    console.log('--------------->');
-    console.log(theGames);
 
     res.status(200).json(theGames);
+  });
+});
+
+gameRoutes.get('/match/:id', (req, res, next) => {
+    //                         |
+  const gameId = req.params.id;
+
+  Game.
+  findOne({ _id: gameId})
+  .exec((err, theGame) => {
+    if(err) {
+      next(err);
+      return;
+    }
+
+    console.log('============GAME=============');
+    console.log(theGame);
+    res.status(200).json(theGame);
   });
 });
 
