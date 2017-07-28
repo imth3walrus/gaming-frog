@@ -33,12 +33,13 @@ function ensureLoggedIn(req, res, next) {
   return;
 }
 
-authRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
+gameRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
 
   const theEscrow = new Escrow({
     total_funds: req.body.bet
   });
-  theEscrow.save((matchEscrow, err) => {
+  theEscrow.save((err, matchEscrow) => {
+    console.log(matchEscrow);
     if (err) {
       res.status(500).json({ message: 'Something went wrong.' });
       return;
@@ -54,25 +55,18 @@ authRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
       escrow: matchEscrow._id
     });
 
-    theGame.save((err) => {
+    theGame.save((err, newMatch) => {
       if (err) {
         res.status(500).json({ message: 'Something went wrong.' });
         return;
       }
-      console.log('--------------------USER SAVED-------------');
-      req.login(theUser, (err) => {
-        if (err) {
-          res.status(500).json({ message: 'Something went wrong.' });
-          return;
-        }
 
-        res.status(200).json(req.user);
+        res.status(200).json(newMatch);
       });
     });
-  });
 });
 
-router.get('/games', ensureLoggedIn, (req, res, next) => {
+gameRoutes.get('/matches', ensureLoggedIn, (req, res, next) => {
   Game.
   find()
   .exec((err, theGames) => {
