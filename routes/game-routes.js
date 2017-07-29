@@ -33,6 +33,7 @@ function ensureLoggedIn(req, res, next) {
   return;
 }
 
+// create a new match
 gameRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
 
   const theEscrow = new Escrow({
@@ -66,6 +67,7 @@ gameRoutes.post('/match', ensureLoggedIn, (req, res, next) => {
     });
 });
 
+// get all matches
 gameRoutes.get('/matches', ensureLoggedIn, (req, res, next) => {
   Game.
   find()
@@ -80,6 +82,7 @@ gameRoutes.get('/matches', ensureLoggedIn, (req, res, next) => {
   });
 });
 
+// get match details
 gameRoutes.get('/match/:id', (req, res, next) => {
     //                         |
   const gameId = req.params.id;
@@ -91,10 +94,95 @@ gameRoutes.get('/match/:id', (req, res, next) => {
       next(err);
       return;
     }
-
-    console.log('============GAME=============');
-    console.log(theGame);
     res.status(200).json(theGame);
+  });
+});
+
+gameRoutes.get('/my-matches', (req, res, next) => {
+    //                         |
+  const userId = req.user._id;
+
+  Game.
+  findOne({ owner: userId})
+  .exec((err, theGame) => {
+    if(err) {
+      next(err);
+      return;
+    }
+    res.status(200).json(theGame);
+  });
+});
+
+// join open match
+gameRoutes.post('/match/join/:id', ensureLoggedIn, (req, res, next) => {
+  const gameId = req.params.id;
+
+  Game.
+  findOne({ _id: gameId})
+  .exec((err, theGame) => {
+    if(err) {
+      next(err);
+      return;
+    }
+    // control to prevent users from joining their own match
+    if (theGame.owner._id.equals(req.user._id)) {
+      res.status(500).json({ message: 'You cant join your own match.' });
+      return;
+    }
+    // control to prevent multiple users from joining the same match
+    if (typeof theGame.opponent != 'undefined') {
+      res.status(500).json({ message: 'Match is already joined by another user.' });
+      return;
+    }
+
+    theGame.opponent = req.user._id;
+    theGame.match_status = "joined";
+
+    theGame.save((err) => {
+      if (err) {
+          next(err);
+          return;
+      }
+      res.status(200).json({message: 'Joined Match Successfully'});
+
+    });
+  });
+});
+
+// post match results
+gameRoutes.post('/match/result/:id', ensureLoggedIn, (req, res, next) => {
+  const gameId = req.params.id;
+
+  Game.
+  findOne({ _id: gameId})
+  .exec((err, theGame) => {
+    if(err) {
+      next(err);
+      return;
+    }
+    // control to prevent users from submiting empty results
+    if (req.body.ownerResult === null || typeof req.body.opponentResult === null) {
+      res.status(500).json({ message: 'Please enter the result for both the owner and your opponent.' });
+      return;
+    }
+    // control to prevent users from submitting results with no opponent
+    if (typeof theGame.opponent === 'undefined') {
+      res.status(500).json({ message: 'Cant enter results without an opponent!' });
+      return;
+    }
+
+    theGame.score_owner = req.body.ownerResult;
+    theGame.score_opponent = req.body.opponentResult;
+    theGame.match_status = "completed";
+
+    theGame.save((err) => {
+      if (err) {
+          next(err);
+          return;
+      }
+      res.status(200).json({message: 'Results entered Successfully'});
+
+    });
   });
 });
 
