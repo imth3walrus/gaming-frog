@@ -98,12 +98,14 @@ gameRoutes.get('/match/:id', (req, res, next) => {
   });
 });
 
+// get user matches
 gameRoutes.get('/my-matches', (req, res, next) => {
-    //                         |
+
   const userId = req.user._id;
 
   Game.
-  findOne({ owner: userId})
+  // find({ owner: userId})
+  find({ $or: [ { owner: userId }, { opponent: userId } ] })
   .exec((err, theGame) => {
     if(err) {
       next(err);
@@ -119,6 +121,7 @@ gameRoutes.post('/match/join/:id', ensureLoggedIn, (req, res, next) => {
 
   Game.
   findOne({ _id: gameId})
+  .sort({"createdAt": -1})
   .exec((err, theGame) => {
     if(err) {
       next(err);
