@@ -35,7 +35,7 @@ const userSchema = new Schema({
   },
   gf_coins: {
     type: Number,
-    deault: 5,
+    default: 5,
   },
   level: {
     type: Number,
